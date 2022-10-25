@@ -3,56 +3,64 @@
 // Tax names
 const combination = ['State Taxes', 'City Taxes', 'County Taxes', 'Country Taxes', 'Special District Taxes']
 
-// Tax line ID
-const taxLine = 'tax-line'
 
 // Main Script
 
 window.addEventListener('load', function () {
 
-	var combinedLabel = document.getElementById(taxLine)
-	combinedLabel.style.display = 'none'
+  const lineItemsContainer = document.getElementsByClassName('w-commerce-commercecheckoutordersummarywrapper')[0].children[1]
   
-	  function combineTaxes() {
+  // lineItems index 1 is skipped because it is a Webflow script element.
+  const lineItems = lineItemsContainer.children
+  
+  const combinedLabel = lineItems[0].cloneNode(true)
+  combinedLabel.children[1].removeAttribute('data-wf-bindings')
 
-	      console.log('Combining taxes...');
+  lineItemsContainer.insertBefore(combinedLabel, lineItems[3]);
+  combinedLabel.children[0].innerText = 'Taxes'
+  combinedLabel.children[1].innerText = ''
+  combinedLabel.style.display = 'none'
+  
+  function combineTaxes() {
 
-	      var fees = document.getElementsByClassName('w-commerce-commercecheckoutordersummaryextraitemslistitem')
+    console.log('Combining taxes...');
 
-	      var prices = []
+    var fees = lineItems[2].children
 
-	      for (var i = 0; i < fees.length; i++) {
+    var prices = []
 
-		if (combination.includes(fees[i].children[0].innerText)) {
+    for (var i = 0; i < fees.length; i++) {
 
-		  fees[i].style.display = 'none'
+      if (combination.includes(fees[i].children[0].innerText)) {
 
-		  prices.push(parseFloat(fees[i].children[1].innerText.replace('$', '')))
+        fees[i].style.display = 'none'
 
-		}
-	      }
+        prices.push(parseFloat(fees[i].children[1].innerText.replace('$', '')))
 
-	      const priceSum = (prices.length > 0) ? prices.reduce((a, b) => a + b).toFixed(2) : 0
+      }
+    }
 
-	      console.log('Sum of taxes: '+priceSum)
+    const priceSum = (prices.length > 0) ? prices.reduce((a, b) => a + b).toFixed(2) : 0
 
-	      combinedLabel.children[1].innerText = '$ ' + priceSum
+    console.log('Sum of taxes: '+priceSum)
 
-	      if (priceSum > 0) {
-		combinedLabel.style.display = 'flex'
-	      } else {
-		combinedLabel.style.display = 'none'
-	      }
+    combinedLabel.children[1].innerText = '$ ' + priceSum
 
-	  }
+    if (priceSum > 0) {
+      combinedLabel.style.display = 'flex'
+    } else {
+      combinedLabel.style.display = 'none'
+    }
 
-		var dom_observer = new MutationObserver(combineTaxes);
+  }
 
-	  var container = document.getElementById('fees')
-	  console.log(container);
-	  var config = { attributes: true, childList: true, characterData: true };
-	  dom_observer.observe(container, config);
+  var dom_observer = new MutationObserver(combineTaxes);
 
-	  combineTaxes()
+  var container = document.getElementById('fees')
+  console.log(container);
+  var config = { attributes: true, childList: true, characterData: true };
+  dom_observer.observe(container, config);
+
+  combineTaxes()
 
 })
